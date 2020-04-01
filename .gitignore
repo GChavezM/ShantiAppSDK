@@ -122,3 +122,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PyCharm
+.idea
+
+# Congif
+shantiapp.json
+config.py
