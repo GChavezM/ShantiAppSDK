@@ -1,5 +1,6 @@
 from datetime import datetime
 import time
+import json
 import requests
 
 
@@ -25,14 +26,14 @@ def convert_date(year, month, day, hour, minute):
     return date_js + offset
 
 
-def fetch_cloud_functions(token, url, data={}, fetch_type='post'):
+def fetch_cloud_functions(token, url, data, fetch_type='post'):
     response = requests.post(url=url, json=data, headers={'Authorization': 'Bearer ' + token})
-    if response.ok:
-        print('Success')
-        if fetch_type == 'get':
-            # print(response.json())
-            return response.json()
-        return True
-    else:
-        print(response.text)
-        return False
+    if not response.ok:
+        error = json.loads(response.text)
+        print('Error', error.get('error').get('message'))
+        return None
+    print('Success')
+    if fetch_type == 'get':
+        # print(response.json())
+        return response.json()
+    return True

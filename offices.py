@@ -1,6 +1,6 @@
-import util
 from xlrd import open_workbook
 from firebase_admin import db
+import util
 
 
 def get_offices(office_name=None):
@@ -29,15 +29,15 @@ def get_office_by_name(office_name=None):
 
 
 def import_offices_from_excel(file='Sucursales.xlsx'):
-    wb = open_workbook(file)
-    sheet = wb.sheet_by_index(0)
+    workbook = open_workbook(file)
+    sheet = workbook.sheet_by_index(0)
     print('Rows:', sheet.nrows)
     print('Columns:', sheet.ncols)
     db.reference('offices').delete()
-    for r in range(1, sheet.nrows):
-        name = sheet.cell_value(r, 0)
-        address = sheet.cell_value(r, 1)
-        google_map = sheet.cell_value(r, 2)
+    for row in range(1, sheet.nrows):
+        name = sheet.cell_value(row, 0)
+        address = sheet.cell_value(row, 1)
+        google_map = sheet.cell_value(row, 2)
         office = {
             'name': name,
             'address': address,

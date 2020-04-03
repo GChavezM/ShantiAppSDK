@@ -1,3 +1,4 @@
+import json
 import requests
 
 
@@ -13,10 +14,10 @@ def get_token(api_key, email="admin@shanti.com", password="shanti123"):
         json=data,
         headers={'Content-Type': 'application/json'}
     )
-    if response.ok:
-        result = response.json()
-        idToken = result.get('idToken')
-        return idToken
-    else:
-        print('Error', response.text)
-        return
+    if not response.ok:
+        error = json.loads(response.text)
+        print('Error', error.get('error').get('message'))
+        return None
+    result = response.json()
+    id_token = result.get('idToken')
+    return id_token
