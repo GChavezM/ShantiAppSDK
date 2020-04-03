@@ -37,30 +37,6 @@ user_types = {
     'not_basic_users': not_basic_users
 }
 
-
-# def get_test_token(email="admin@shanti.com", password="shanti123"):
-#     url = 'https://identitytoolkit.googleapis.com/v1/'\
-#           'accounts:signInWithPassword?key=' +\
-#           API_KEY
-#     data = {
-#         'email': email,
-#         'password': password,
-#         'returnSecureToken': True
-#     }
-#     response = requests.post(
-#         url=url,
-#         json=data,
-#         headers={'Content-Type': 'application/json'}
-#     )
-#     if response.ok:
-#         result = response.json()
-#         idToken = result['idToken']
-#         return idToken
-#     else:
-#         print('Error', response.text)
-#         return False
-
-
 # def change_user_password():
 #     url = 'https://identitytoolkit.googleapis.com/v1/'\
 #           'accounts:update?key=' +\
@@ -105,38 +81,6 @@ user_types = {
 #     else:
 #         print(response.text)
 #         return False
-
-
-# def get_users(user_type='basic_users', name=''):
-#     users = {}
-#     users_db = db.reference('users').get()
-#     for key, user in users_db.items():
-#         is_user_type = util.user_types[user_type][user['type']]
-#         if (user.get('name') and user.get('lastName')):
-#             is_in_user_name = util.is_in_string(
-#                 name,
-#                 user.get('name') + " " + user.get('lastName')
-#             )
-#         else:
-#             is_in_user_name = False
-#         if (is_user_type & is_in_user_name):
-#             users[key] = user
-#     return users
-
-
-# def get_user_by_name(name='', last_name=''):
-#     users = []
-#     users_db = db.reference('users').get()
-#     for key, user in users_db.items():
-#         user_name = user.get('name')
-#         user_last_name = user.get('lastName')
-#         if (util.check_equal_strings(name, user_name)
-#                 | util.check_equal_strings(last_name, user_last_name)):
-#             user.update({
-#                 'key': key
-#             })
-#             users.append(user)
-#     print('Number of Users Found', len(users))
 
 
 # def import_users_from_excel(file="Alumnos.xlsx", user_type="basic"):
