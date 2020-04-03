@@ -1,47 +1,41 @@
-import util
-import requests
-from xlrd import open_workbook
-from firebase_admin import auth
+# import requests
+# from xlrd import open_workbook
+# from firebase_admin import auth
 from firebase_admin import db
+from util import check_in_string
 
-all_users = {
+ALL_USERS = {
     'basic': True,
     'advanced': True,
     'admin': True
 }
-basic_users = {
+BASIC_USERS = {
     'basic': True,
     'advanced': False,
     'admin': False
 }
-advanced_users = {
+ADVANCED_USERS = {
     'basic': False,
     'advanced': True,
     'admin': False
 }
-admin_users = {
+ADMIN_USERS = {
     'basic': False,
     'advanced': False,
     'admin': True
 }
-not_basic_users = {
+NOT_BASIC_USERS = {
     'basic': False,
     'advanced': True,
     'admin': True
 }
-user_types = {
-    'all_users': all_users,
-    'basic_users': basic_users,
-    'advanced_users': advanced_users,
-    'admin_users': admin_users,
-    'not_basic_users': not_basic_users
+USER_TYPES = {
+    'all_users': ALL_USERS,
+    'basic_users': BASIC_USERS,
+    'advanced_users': ADVANCED_USERS,
+    'admin_users': ADMIN_USERS,
+    'not_basic_users': NOT_BASIC_USERS
 }
-
-# def change_user_password():
-#     url = 'https://identitytoolkit.googleapis.com/v1/'\
-#           'accounts:update?key=' +\
-#            API_KEY
-#     return url
 
 
 # def manage_user(data, new_user=False, local=False, token=None):
@@ -126,14 +120,15 @@ user_types = {
 #         if (is_user_type):
 #             db.reference('users').child(key).delete()
 #             print(user.get('email'), 'deleted')
+
 def get_users(user_type='basic_users', user_name=None):
     users = {}
     users_db = db.reference('users').get()
     for key, user in users_db.items():
-        is_user_type = user_types[user_type][user.get('type')]
+        is_user_type = USER_TYPES[user_type][user.get('type')]
         is_in_user_name = False
         if user.get('name') and user.get('lastName'):
-            is_in_user_name = (util.check_in_string(user_name, user.get('name') + " " + user.get('lastName')))
+            is_in_user_name = (check_in_string(user_name, user.get('name') + " " + user.get('lastName')))
         # print(is_user_type, is_in_user_name)
         if is_user_type and is_in_user_name:
             users[key] = user
