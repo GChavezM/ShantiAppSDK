@@ -4,6 +4,13 @@ import json
 import requests
 
 
+MIN_DATA = {
+    'office': ["name", "address"],
+    'user': ["email", "password", "name"],
+    'program': ["name", "type"]
+}
+
+
 def check_in_string(strings, original_string):
     if strings and original_string:
         strings = strings.split()
@@ -37,3 +44,11 @@ def fetch_cloud_functions(token, url, data, fetch_type='post'):
         # print(response.json())
         return response.json()
     return True
+
+
+def validate_data(data, data_type):
+    min_data = MIN_DATA[data_type]
+    if all(key in data for key in min_data):
+        return True
+    print('Insufficient Data')
+    return False

@@ -1,13 +1,32 @@
 from xlrd import open_workbook
 from firebase_admin import db
-import util
+from util import validate_data, check_in_string
+
+
+def manage_office(office_data, office_key=None, action='create'):
+    if action == 'update' and office_key:
+        db.reference('offices').child(office_key).update(office_data)
+        print('Office Updated')
+        return True
+    if action == 'create' and validate_data(office_data, 'office'):
+        db.reference('offices').push(office_data)
+        print('Office Created')
+        return True
+    if action == 'delete' and office_key:
+        db.reference('offices').child(office_key).delete()
+        print('Office Deleted')
+        return True
+    print('Insufficient Data')
+    return False
 
 
 def get_offices(office_name=None):
     offices = {}
     offices_db = db.reference('offices').get()
+    if not offices_db:
+        return offices
     for key, office in offices_db.items():
-        is_in_name = util.check_in_string(office_name, office.get('name'))
+        is_in_name = check_in_string(office_name, office.get('name'))
         if is_in_name:
             offices[key] = office
     return offices
@@ -44,4 +63,4 @@ def import_offices_from_excel(file='Sucursales.xlsx'):
             'url': google_map
         }
         print(office)
-        db.reference('offices').push(office)
+        manage_office(office)
