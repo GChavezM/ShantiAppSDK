@@ -8,22 +8,22 @@ def get_offices(office_name=None):
     offices_db = db.reference('offices').get()
     for key, office in offices_db.items():
         is_in_name = util.check_in_string(office_name, office.get('name'))
-        if (is_in_name):
+        if is_in_name:
             offices[key] = office
     return offices
 
 
 def get_office_by_id(office_id=None):
-    if (office_id):
+    if office_id:
         return db.reference('offices').child(office_id).get()
     return None
 
 
 def get_office_by_name(office_name=None):
-    if (office_name):
+    if office_name:
         office = get_offices(office_name)
         print(len(office))
-        if (len(office) == 1):
+        if len(office) == 1:
             return [*office.items()][0]
     return None, None
 

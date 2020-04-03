@@ -14,8 +14,8 @@ def check_in_string(strings, original_string):
     return True
 
 
-def convertDate(year, month, day, hour, minute):
-    if (year == 0 or month == 0 or day == 0):
+def convert_date(year, month, day, hour, minute):
+    if year == 0 or month == 0 or day == 0:
         today = datetime.now()
         date = datetime(today.year, today.month - 1, today.day, hour, minute)
     else:
@@ -26,14 +26,10 @@ def convertDate(year, month, day, hour, minute):
 
 
 def fetch_cloud_functions(token, url, data={}, fetch_type='post'):
-    response = requests.post(
-        url=url,
-        json=data,
-        headers={'Authorization': 'Bearer ' + token}
-    )
+    response = requests.post(url=url, json=data, headers={'Authorization': 'Bearer ' + token})
     if response.ok:
         print('Success')
-        if (fetch_type == 'get'):
+        if fetch_type == 'get':
             # print(response.json())
             return response.json()
         return True

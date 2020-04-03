@@ -188,24 +188,23 @@ def get_users(user_type='basic_users', user_name=None):
     for key, user in users_db.items():
         is_user_type = user_types[user_type][user.get('type')]
         is_in_user_name = False
-        if (user.get('name') and user.get('lastName')):
-            is_in_user_name = (util.check_in_string(user_name, user.get('name')
-                               + " " + user.get('lastName')))
+        if user.get('name') and user.get('lastName'):
+            is_in_user_name = (util.check_in_string(user_name, user.get('name') + " " + user.get('lastName')))
         # print(is_user_type, is_in_user_name)
-        if (is_user_type and is_in_user_name):
+        if is_user_type and is_in_user_name:
             users[key] = user
     return users
 
 
 def get_user_by_id(user_id=None):
-    if (user_id):
+    if user_id:
         return db.reference('users').child(user_id).get()
     return None
 
 
 def get_user_by_name(user_name=None):
-    if (user_name):
+    if user_name:
         user = get_users(user_type='all_users', user_name=user_name)
-        if (len(user) == 1):
+        if len(user) == 1:
             return [*user.items()][0]
     return None, None
