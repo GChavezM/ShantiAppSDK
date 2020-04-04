@@ -112,15 +112,6 @@ USER_TYPES = {
 #     print("End Process")
 
 
-# def delete_users(user_type='basic_users'):
-#     print("Delete Users in Database")
-#     users_db = db.reference('users').get()
-#     for key, user in users_db.items():
-#         is_user_type = util.user_types[user_type][user.get('type')]
-#         if (is_user_type):
-#             db.reference('users').child(key).delete()
-#             print(user.get('email'), 'deleted')
-
 def get_users(user_type='basic_users', user_name=None):
     users = {}
     users_db = db.reference('users').get()
@@ -128,7 +119,9 @@ def get_users(user_type='basic_users', user_name=None):
         is_user_type = USER_TYPES[user_type][user.get('type')]
         is_in_user_name = False
         if user.get('name') and user.get('lastName'):
-            is_in_user_name = (check_in_string(user_name, user.get('name') + " " + user.get('lastName')))
+            is_in_user_name = (check_in_string(
+                user_name,
+                user.get('name') + " " + user.get('lastName')))
         # print(is_user_type, is_in_user_name)
         if is_user_type and is_in_user_name:
             users[key] = user
