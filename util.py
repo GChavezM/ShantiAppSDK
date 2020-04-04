@@ -2,6 +2,7 @@ from datetime import datetime
 import time
 import json
 import requests
+import base64
 
 
 MIN_DATA = {
@@ -52,3 +53,9 @@ def validate_data(data, data_type):
         return True
     print('Insufficient Data')
     return False
+
+
+def get_image_base64(image):
+    with open(image, "rb") as img_file:
+        image_str = base64.b64encode(img_file.read())
+    return image_str.decode('utf-8')
