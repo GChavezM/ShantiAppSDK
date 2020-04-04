@@ -126,6 +126,16 @@ dmypy.json
 # PyCharm
 .idea
 
+# VS Code
+.vscode
+
 # Congif
 shantiapp.json
 config.py
+
+# Images
+*.jpg
+*.png
+
+# Other
+*.xlsx
