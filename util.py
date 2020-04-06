@@ -1,10 +1,11 @@
 from datetime import datetime
 import time
 import json
-import requests
 import base64
+import requests
+from auth import  get_token
 
-
+api_key = None
 MIN_DATA = {
     'office': ["name", "address"],
     'user': ["email", "password", "name"],
@@ -59,3 +60,15 @@ def get_image_base64(image):
     with open(image, "rb") as img_file:
         image_str = base64.b64encode(img_file.read())
     return image_str.decode('utf-8')
+
+
+def upload_image(image, location):
+    if not image:
+        return None
+    token = get_token(api_key)
+    url = 'https://us-central1-shantiapp-4eae1.cloudfunctions.net/uploadImage'
+    data = {
+        'image': get_image_base64(image),
+        'location': location
+    }
+    return fetch_cloud_functions(token, url, data, fetch_type='get')
