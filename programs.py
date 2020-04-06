@@ -1,6 +1,29 @@
 # from xlrd import open_workbook
 from firebase_admin import db
-from util import check_in_string
+from util import validate_data, check_in_string, upload_image
+
+
+def manage_program(program_data=None, image=None, program_key=None, action=' create'):
+    if action == 'create' and validate_data(program_data, ' program'):
+        image_data = upload_image(image, 'program')
+        if image_data:
+            program_data['image'] = image_data
+        db.reference('programs').push(program_data)
+        print('Program Created')
+        return True
+    if action == 'update' and program_key:
+        image_data = upload_image(image, 'program')
+        if image_data:
+            program_data['image'] = image_data
+        db.reference('programs').child(program_key).update(program_data)
+        print('Program Updated')
+        return True
+    if action == 'delete' and program_key:
+        db.reference('programs').child(program_key).delete()
+        print('Program Deleted')
+        return True
+    print('Insufficient Data')
+    return False
 
 
 def get_programs(program_name=None):

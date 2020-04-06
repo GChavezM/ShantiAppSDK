@@ -9,7 +9,7 @@ api_key = None
 MIN_DATA = {
     'office': ["name", "address"],
     'user': ["email", "password", "name"],
-    'program': ["name", "type"]
+    'program': ["name", "type", "office", "teacher", "packages", "dates"]
 }
 
 

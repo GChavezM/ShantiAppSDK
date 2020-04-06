@@ -3,14 +3,14 @@ from firebase_admin import db
 from util import validate_data, check_in_string
 
 
-def manage_office(office_data, office_key=None, action='create'):
-    if action == 'update' and office_key:
-        db.reference('offices').child(office_key).update(office_data)
-        print('Office Updated')
-        return True
+def manage_office(office_data=None, office_key=None, action='create'):
     if action == 'create' and validate_data(office_data, 'office'):
         db.reference('offices').push(office_data)
         print('Office Created')
+        return True
+    if action == 'update' and office_key:
+        db.reference('offices').child(office_key).update(office_data)
+        print('Office Updated')
         return True
     if action == 'delete' and office_key:
         db.reference('offices').child(office_key).delete()
