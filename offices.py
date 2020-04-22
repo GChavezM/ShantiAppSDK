@@ -1,38 +1,14 @@
-from xlrd import open_workbook
+import openpyxl
 from firebase_admin import db
 from _util import check_in_string
 
 
 class Office:
     def __init__(self, name, address, url=None, key=None):
-        self._name = name
-        self._address = address
-        self._google_map_url = url
+        self.name = name
+        self.address = address
+        self.google_map_url = url
         self._key = key
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def address(self):
-        return self._address
-
-    @address.setter
-    def address(self, address):
-        self._address = address
-
-    @property
-    def google_map_url(self):
-        return self._google_map_url
-
-    @google_map_url.setter
-    def google_map_url(self, url):
-        self._google_map_url = url
 
     @property
     def key(self):
@@ -43,13 +19,10 @@ class Office:
 
     def upload(self):
         self._validate()
-        if self.key is not None:
-            raise ValueError('Office key already exists')
-        self._key = db.reference('offices').push(self.get_data()).key
-
-    def update(self):
-        self._validate()
-        db.reference('offices').child(self.key).update(self.get_data())
+        if self.key:
+            db.reference('offices').child(self.key).update(self.get_data())
+        else:
+            self._key = db.reference('offices').push(self.get_data()).key
 
     def delete(self):
         if self.key:
@@ -58,9 +31,9 @@ class Office:
 
     def _delete_data(self):
         self._key = None
-        self._name = None
-        self._address = None
-        self._google_map_url = None
+        self.name = None
+        self.address = None
+        self.google_map_url = None
 
     def _validate(self):
         if self.name is None or self.address is None:
@@ -73,10 +46,22 @@ class Offices:
             self._offices = offices
         else:
             self._offices = []
+        self._index = None
 
     @property
     def offices(self):
         return self._offices
+
+    def __iter__(self):
+        self._index = 0
+        return self
+
+    def __next__(self):
+        if self._index < len(self.offices):
+            result = self.offices[self._index]
+            self._index += 1
+            return result
+        raise StopIteration
 
     def add_office(self, office):
         if office.key:
@@ -84,16 +69,19 @@ class Offices:
         else:
             raise ValueError("Insufficient Data")
 
-    # def import_from_file_to_db(self, file):
-    #     workbook = open_workbook(file)
-    #     sheet = workbook.sheet_by_index(0)
-    #     for row in range(1, sheet.nrows):
-    #         name = sheet.cell_value(row, 0)
-    #         address = sheet.cell_value(row, 1)
-    #         url = sheet.cell_value(row, 2)
-    #         office = Office(name, address, url)
-    #         office.upload()
-    #         self.add_office(office)
+    def import_from_file_to_db(self, file):
+        workbook = openpyxl.load_workbook(file)
+        sheet = workbook.active
+        for row in range(2, sheet.max_row + 1):
+            cell_name = sheet.cell(row, 2)
+            name = cell_name.value
+            cell_address = sheet.cell(row, 3)
+            address = cell_address.value
+            cell_url = sheet.cell(row, 4)
+            url = cell_url.value
+            office = Office(name, address, url)
+            office.upload()
+        self.load_from_db()
 
     def load_from_db(self):
         offices = []
@@ -101,29 +89,56 @@ class Offices:
         if not offices_db:
             raise ImportError('No offices in database')
         for key, office in offices_db.items():
-            office = Office(office['name'], office['address'], office['url'], key=key)
-            offices.append(office)
+            offices.append(
+                Office(office.get('name'), office.get('address'), office.get('url'), key=key)
+            )
         self._offices = offices
 
     def load_from_file(self, file):
         offices = []
-        workbook = open_workbook(file)
-        sheet = workbook.sheet_by_index(0)
-        for row in range(1, sheet.nrows):
-            key = sheet.cell_value(row, 0)
-            name = sheet.cell_value(row, 1)
-            address = sheet.cell_value(row, 2)
-            url = sheet.cell_value(row, 3)
-            office = Office(name, address, url, key=key)
-            offices.append(office)
+        workbook = openpyxl.load_workbook(file)
+        sheet = workbook.active
+        for row in range(2, sheet.max_row + 1):
+            cell_key = sheet.cell(row, 2)
+            key = cell_key.value
+            cell_name = sheet.cell(row, 3)
+            name = cell_name.value
+            cell_address = sheet.cell(row, 4)
+            address = cell_address.value
+            cell_url = sheet.cell(row, 5)
+            url = cell_url.value
+            offices.append(Office(name, address, url, key=key))
         self._offices = offices
 
-    def export_to_file(self, file):
-        workbook = open_workbook(file)
-        sheet = workbook.sheet_by_index(0)
+    def export_to_file(self, file, title="Offices"):
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = title
+        cell_index = sheet.cell(1, 1)
+        cell_index.value = "N"
+        cell_key = sheet.cell(1, 2)
+        cell_key.value = "KEY"
+        cell_name = sheet.cell(1, 3)
+        cell_name.value = "NAME"
+        cell_address = sheet.cell(1, 4)
+        cell_address.value = "ADDRESS"
+        cell_url = sheet.cell(1, 5)
+        cell_url.value = "URL"
+        workbook.save(file)
+        index = 2
         for office in self.offices:
-            # TODO write offices to file
-            pass
+            cell_index = sheet.cell(index, 1)
+            cell_index.value = index
+            cell_key = sheet.cell(index, 2)
+            cell_key.value = office.key
+            cell_name = sheet.cell(index, 3)
+            cell_name.value = office.name
+            cell_address = sheet.cell(index, 4)
+            cell_address.value = office.address
+            cell_url = sheet.cell(index, 5)
+            cell_url.value = office.google_map_url
+            index += 1
+            workbook.save(file)
 
     def get_office_by_id(self, office_id):
         for office in self.offices:
