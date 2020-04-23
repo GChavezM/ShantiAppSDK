@@ -29,6 +29,11 @@ class Office:
             db.reference('offices').child(self.key).delete()
         self._delete_data()
 
+    @staticmethod
+    def load_from_db(key):
+        office = db.reference('offices').child(key).get()
+        return Office(office.get('name'), office.get('address'), office.get('url'), key=key)
+
     def _delete_data(self):
         self._key = None
         self.name = None
@@ -73,12 +78,9 @@ class Offices:
         workbook = openpyxl.load_workbook(file)
         sheet = workbook.active
         for row in range(2, sheet.max_row + 1):
-            cell_name = sheet.cell(row, 2)
-            name = cell_name.value
-            cell_address = sheet.cell(row, 3)
-            address = cell_address.value
-            cell_url = sheet.cell(row, 4)
-            url = cell_url.value
+            name = sheet.cell(row, 2).value
+            address = sheet.cell(row, 3).value
+            url = sheet.cell(row, 4).value
             office = Office(name, address, url)
             office.upload()
         self.load_from_db()
@@ -99,14 +101,10 @@ class Offices:
         workbook = openpyxl.load_workbook(file)
         sheet = workbook.active
         for row in range(2, sheet.max_row + 1):
-            cell_key = sheet.cell(row, 2)
-            key = cell_key.value
-            cell_name = sheet.cell(row, 3)
-            name = cell_name.value
-            cell_address = sheet.cell(row, 4)
-            address = cell_address.value
-            cell_url = sheet.cell(row, 5)
-            url = cell_url.value
+            key = sheet.cell(row, 2).value
+            name = sheet.cell(row, 3).value
+            address = sheet.cell(row, 4).value
+            url = sheet.cell(row, 5).value
             offices.append(Office(name, address, url, key=key))
         self._offices = offices
 
@@ -114,29 +112,19 @@ class Offices:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = title
-        cell_index = sheet.cell(1, 1)
-        cell_index.value = "N"
-        cell_key = sheet.cell(1, 2)
-        cell_key.value = "KEY"
-        cell_name = sheet.cell(1, 3)
-        cell_name.value = "NAME"
-        cell_address = sheet.cell(1, 4)
-        cell_address.value = "ADDRESS"
-        cell_url = sheet.cell(1, 5)
-        cell_url.value = "URL"
+        cell_index = sheet.cell(1, 1, "N")
+        cell_key = sheet.cell(1, 2, "KEY")
+        cell_name = sheet.cell(1, 3, "NAME")
+        cell_address = sheet.cell(1, 4, "ADDRESS")
+        cell_url = sheet.cell(1, 5, "URL")
         workbook.save(file)
         index = 2
         for office in self.offices:
-            cell_index = sheet.cell(index, 1)
-            cell_index.value = index
-            cell_key = sheet.cell(index, 2)
-            cell_key.value = office.key
-            cell_name = sheet.cell(index, 3)
-            cell_name.value = office.name
-            cell_address = sheet.cell(index, 4)
-            cell_address.value = office.address
-            cell_url = sheet.cell(index, 5)
-            cell_url.value = office.google_map_url
+            cell_index = sheet.cell(index, 1, index - 1)
+            cell_key = sheet.cell(index, 2, office.key)
+            cell_name = sheet.cell(index, 3, office.name)
+            cell_address = sheet.cell(index, 4, office.address)
+            cell_url = sheet.cell(index, 5, office.google_map_url)
             index += 1
             workbook.save(file)
 
