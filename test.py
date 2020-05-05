@@ -99,14 +99,15 @@ def test_users_database():
     from users import User, Users
     users = Users()
     users.load_from_db(complete_profile=False)
-    admin_users = users.get_user_by_name_and_type(user_name='fa Trav', user_type='all_users', find_one=False)
+    admin_users = users.get_user_by_name_and_role(user_name='', user_role='admin_users', find_one=False)
     print("Original Users List")
     for user in admin_users:
         print("Key:", user.key)
         print("Nombre:", user.display_name)
         print("Email:", user.email)
-        print("Tipo:", user.user_type)
+        print("Rol:", user.user_role)
         print("Imagen", user.image)
+        print(user.get_data())
 
 
 def start():

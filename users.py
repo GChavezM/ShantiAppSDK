@@ -1,50 +1,53 @@
-# import requests
 import openpyxl
 from firebase_admin import auth
 from firebase_admin import db
-from _util import check_in_string
+from _util import check_in_string, upload_image
 
-ALL_USERS = {
+_ALL_USERS = {
     'basic': True,
     'advanced': True,
     'admin': True
 }
-BASIC_USERS = {
+_BASIC_USERS = {
     'basic': True,
     'advanced': False,
     'admin': False
 }
-ADVANCED_USERS = {
+_ADVANCED_USERS = {
     'basic': False,
     'advanced': True,
     'admin': False
 }
-ADMIN_USERS = {
+_ADMIN_USERS = {
     'basic': False,
     'advanced': False,
     'admin': True
 }
-NOT_BASIC_USERS = {
+_NOT_BASIC_USERS = {
     'basic': False,
     'advanced': True,
     'admin': True
 }
-USER_TYPES = {
-    'all_users': ALL_USERS,
-    'basic_users': BASIC_USERS,
-    'advanced_users': ADVANCED_USERS,
-    'admin_users': ADMIN_USERS,
-    'not_basic_users': NOT_BASIC_USERS
+_USER_ROLES = {
+    'all_users': _ALL_USERS,
+    'basic_users': _BASIC_USERS,
+    'advanced_users': _ADVANCED_USERS,
+    'admin_users': _ADMIN_USERS,
+    'not_basic_users': _NOT_BASIC_USERS
 }
 
 
 class User:
-    def __init__(self, name, last_name, email, user_type='basic', key=None, **kwargs):
+    def __init__(self, name, last_name, email, user_role='basic', key=None, **kwargs):
         self.name = name
         self.last_name = last_name
         self.email = email
-        self.user_type = user_type
-        self.image = kwargs.get('image')
+        self.user_role = user_role
+        image = kwargs.get('image')
+        if image and 'uri' in image:
+            self.image = kwargs.get('image')
+        else:
+            self.image = None
         self.phone = kwargs.get('phone')
         self.info = kwargs.get('info')
         self._key = key
@@ -59,21 +62,26 @@ class User:
         return self.name + " " + self.last_name
 
     @property
-    def complete_profile(self):
-        return self.name and self.last_name and self.email and self.phone
+    def is_complete_profile(self):
+        return self.name is not None and self.last_name is not None and self.email is not None and self.phone is not None
 
     def get_data(self):
-        return {'name': self.name, 'lastName': self.last_name, 'email': self.email, 'type': self.user_type,
-                'phone': self.phone, 'info': self.info, 'image': self.image, 'completeProfile': self.complete_profile}
+        return {'name': self.name, 'lastName': self.last_name, 'email': self.email, 'type': self.user_role,
+                'phone': self.phone, 'info': self.info, 'image': self.image, 'completeProfile': self.is_complete_profile}
 
-    def upload(self):
-        # TODO handle images
+    def upload(self, image):
         self._validate()
-        if self.key:
-            db.reference('users').child(self.key).update(self.get_data())
+        if image:
+            past_location = self.image['imagePath'] if 'imagePath' in self.image else None
+            self.image = upload_image(image, 'users', past_location)
+        if self.key is None:
+            if self._password is None:
+                raise ValueError('Can not create new user without password')
+            user_record = auth.create_user(email=self.email, password=self._password)
+            self._key = user_record.uid
+            db.reference('users').child(self.key).set(self.get_data())
         else:
-            # TODO create user
-            pass
+            db.reference('users').child(self.key).update(self.get_data())
 
     def delete(self):
         if self.key:
@@ -91,14 +99,14 @@ class User:
         self.name = None
         self.last_name = None
         self.email = None
-        self.user_type = None
+        self.user_role = None
         self.image = None
         self.phone = None
         self.info = None
         self._password = None
 
     def _validate(self):
-        if self.name is None or self.last_name is None or self.email is None or self.user_type is None:
+        if self.name is None or self.last_name is None or self.email is None or self.user_role is None:
             raise ValueError("Insufficient Data")
 
 
@@ -159,10 +167,10 @@ class Users:
             name = sheet.cell(row, 3).value
             last_name = sheet.cell(row, 4).value
             email = sheet.cell(row, 5).value
-            user_type = sheet.cell(row, 6).value
+            user_role = sheet.cell(row, 6).value
             phone = sheet.cell(row, 7).value
             info = sheet.cell(row, 8).value
-            users.append(User(name, last_name, email, user_type, phone=phone, info=info, key=key))
+            users.append(User(name, last_name, email, user_role, phone=phone, info=info, key=key))
         self._users = users
 
     def export_to_file(self, file, title="Users"):
@@ -174,7 +182,7 @@ class Users:
         cell_name = sheet.cell(1, 3, "NAME")
         cell_last_name = sheet.cell(1, 4, "LAST_NAME")
         cell_url = sheet.cell(1, 5, "EMAIL")
-        cell_type = sheet.cell(1, 6, "TYPE")
+        cell_role = sheet.cell(1, 6, "ROLE")
         cell_phone = sheet.cell(1, 7, "PHONE")
         cell_info = sheet.cell(1, 8, "INFO")
         workbook.save(file)
@@ -185,7 +193,7 @@ class Users:
             cell_name = sheet.cell(index, 3, user.name)
             cell_last_name = sheet.cell(index, 4, user.last_name)
             cell_url = sheet.cell(index, 5, user.email)
-            cell_type = sheet.cell(index, 6, user.user_type)
+            cell_role = sheet.cell(index, 6, user.user_role)
             cell_phone = sheet.cell(index, 7, user.phone)
             cell_info = sheet.cell(index, 8, user.info)
             index += 1
@@ -197,11 +205,11 @@ class Users:
                 return user
         return None
 
-    def get_user_by_name_and_type(self, user_name='', user_type='basic_users', find_one=True):
+    def get_user_by_name_and_role(self, user_name='', user_role='basic_users', find_one=True):
         users = []
         for user in self.users:
             is_in_name = check_in_string(user_name, user.display_name)
-            is_in_type = USER_TYPES[user_type][user.user_type]
+            is_in_type = _USER_ROLES[user_role][user.user_role]
             if is_in_name and is_in_type:
                 users.append(user)
         if find_one:
@@ -260,7 +268,7 @@ class Users:
 #         return False
 
 
-# def import_users_from_excel(file="Alumnos.xlsx", user_type="basic"):
+# def import_users_from_excel(file="Alumnos.xlsx", user_role="basic"):
 #     password = 'shanti123'
 #     phone = 65171311
 #     wb = open_workbook(file)
@@ -282,7 +290,7 @@ class Users:
 #                 'name': name,
 #                 'lastName': last_name,
 #                 'email': email,
-#                 'type': user_type,
+#                 'type': user_role,
 #                 'phone': phone
 #             }
 #             print(row, user)

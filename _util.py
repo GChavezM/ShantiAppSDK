@@ -105,13 +105,14 @@ def _get_image_base64(image):
     return image_str.decode('utf-8')
 
 
-def upload_image(image, location):
+def upload_image(image, location, past_location=None):
     """
     Upload an image to Firebase storage.
 
     Args:
         image: Image file to upload.
         location (str): Destination in Firebase storage.
+        past_location (str): Older image destination to delete
 
     Returns:
         dict: The image path and image uri.
@@ -119,8 +120,9 @@ def upload_image(image, location):
     if not image:
         return None
     url = 'https://us-central1-shantiapp-4eae1.cloudfunctions.net/uploadImage'
+    image_data = {'base64': _get_image_base64(image), 'imagePath': past_location}
     data = {
-        'image': _get_image_base64(image),
+        'image': image_data,
         'location': location
     }
     return fetch_cloud_functions(url, data, fetch_type='get')
