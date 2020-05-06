@@ -1,4 +1,5 @@
-import openpyxl
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
 from firebase_admin import db
 from _util import check_in_string
 
@@ -80,7 +81,7 @@ class Offices:
             raise ValueError("Insufficient Data")
 
     def import_from_file_to_db(self, file):
-        workbook = openpyxl.load_workbook(file)
+        workbook = load_workbook(file)
         sheet = workbook.active
         for row in range(2, sheet.max_row + 1):
             name = sheet.cell(row, 2).value
@@ -104,7 +105,7 @@ class Offices:
 
     def load_from_file(self, file):
         offices = []
-        workbook = openpyxl.load_workbook(file)
+        workbook = load_workbook(file)
         sheet = workbook.active
         for row in range(2, sheet.max_row + 1):
             key = sheet.cell(row, 2).value
@@ -115,14 +116,15 @@ class Offices:
         self._offices = offices
 
     def export_to_file(self, file, title="Offices"):
-        workbook = openpyxl.Workbook()
+        workbook = Workbook()
         sheet = workbook.active
         sheet.title = title
-        sheet.cell(1, 1, "N")
-        sheet.cell(1, 2, "KEY")
-        sheet.cell(1, 3, "NAME")
-        sheet.cell(1, 4, "ADDRESS")
-        sheet.cell(1, 5, "URL")
+        font = Font(bold=True)
+        sheet.cell(1, 1, "No.").font = font
+        sheet.cell(1, 2, "KEY").font = font
+        sheet.cell(1, 3, "NAME").font = font
+        sheet.cell(1, 4, "ADDRESS").font = font
+        sheet.cell(1, 5, "URL").font = font
         workbook.save(file)
         index = 2
         for office in self.offices:

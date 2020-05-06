@@ -1,4 +1,5 @@
-import openpyxl
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
 from firebase_admin import auth
 from firebase_admin import db
 from _util import check_in_string, upload_image
@@ -38,12 +39,12 @@ _USER_ROLES = {
 
 
 class User:
-    def __init__(self, name, last_name, email, user_role='basic', key=None,
+    def __init__(self, name, last_name, email, role='basic', key=None,
                  **kwargs):
         self.name = name
         self.last_name = last_name
         self.email = email
-        self.user_role = user_role
+        self.role = role
         self.image = None
         image = kwargs.get('image')
         if image and 'uri' in image:
@@ -72,7 +73,7 @@ class User:
             'name': self.name,
             'lastName': self.last_name,
             'email': self.email,
-            'role': self.user_role,
+            'role': self.role,
             'phone': self.phone,
             'info': self.info,
             'image': self.image,
@@ -114,7 +115,7 @@ class User:
         self.name = None
         self.last_name = None
         self.email = None
-        self.user_role = None
+        self.role = None
         self.image = None
         self.phone = None
         self.info = None
@@ -122,7 +123,7 @@ class User:
 
     def _validate(self):
         if (self.name is None or self.last_name is None or
-                self.email is None or self.user_role is None):
+                self.email is None or self.role is None):
             raise ValueError("Insufficient Data")
 
 
@@ -180,34 +181,35 @@ class Users:
 
     def load_from_file(self, file):
         users = []
-        workbook = openpyxl.load_workbook(file)
+        workbook = load_workbook(file)
         sheet = workbook.active
         for row in range(2, sheet.max_row + 1):
             key = sheet.cell(row, 2).value
             name = sheet.cell(row, 3).value
             last_name = sheet.cell(row, 4).value
             email = sheet.cell(row, 5).value
-            user_role = sheet.cell(row, 6).value
+            role = sheet.cell(row, 6).value
             phone = sheet.cell(row, 7).value
             info = sheet.cell(row, 8).value
             users.append(
-                User(name, last_name, email, user_role, phone=phone, info=info,
+                User(name, last_name, email, role, phone=phone, info=info,
                      key=key)
             )
         self._users = users
 
     def export_to_file(self, file, title="Users"):
-        workbook = openpyxl.Workbook()
+        workbook = Workbook()
         sheet = workbook.active
         sheet.title = title
-        sheet.cell(1, 1, "N")
-        sheet.cell(1, 2, "KEY")
-        sheet.cell(1, 3, "NAME")
-        sheet.cell(1, 4, "LAST_NAME")
-        sheet.cell(1, 5, "EMAIL")
-        sheet.cell(1, 6, "ROLE")
-        sheet.cell(1, 7, "PHONE")
-        sheet.cell(1, 8, "INFO")
+        font = Font(bold=True)
+        sheet.cell(1, 1, "N").font = font
+        sheet.cell(1, 2, "KEY").font = font
+        sheet.cell(1, 3, "NAME").font = font
+        sheet.cell(1, 4, "LAST_NAME").font = font
+        sheet.cell(1, 5, "EMAIL").font = font
+        sheet.cell(1, 6, "ROLE").font = font
+        sheet.cell(1, 7, "PHONE").font = font
+        sheet.cell(1, 8, "INFO").font = font
         workbook.save(file)
         index = 2
         for user in self.users:
@@ -216,7 +218,7 @@ class Users:
             sheet.cell(index, 3, user.name)
             sheet.cell(index, 4, user.last_name)
             sheet.cell(index, 5, user.email)
-            sheet.cell(index, 6, user.user_role)
+            sheet.cell(index, 6, user.role)
             sheet.cell(index, 7, user.phone)
             sheet.cell(index, 8, user.info)
             index += 1
