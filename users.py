@@ -38,7 +38,8 @@ _USER_ROLES = {
 
 
 class User:
-    def __init__(self, name, last_name, email, user_role='basic', key=None, **kwargs):
+    def __init__(self, name, last_name, email, user_role='basic', key=None,
+                 **kwargs):
         self.name = name
         self.last_name = last_name
         self.email = email
@@ -63,8 +64,8 @@ class User:
 
     @property
     def is_complete_profile(self):
-        return self.name is not None and self.last_name is not None and \
-               self.email is not None and self.phone is not None
+        return (self.name is not None and self.last_name is not None and
+                self.email is not None and self.phone is not None)
 
     def get_data(self):
         return {
@@ -81,12 +82,16 @@ class User:
     def upload(self, image):
         self._validate()
         if image:
-            past_location = self.image['imagePath'] if 'imagePath' in self.image else None
+            past_location = (
+                self.image['imagePath']
+                if 'imagePath' in self.image
+                else None)
             self.image = upload_image(image, 'users', past_location)
         if self.key is None:
             if self._password is None:
                 raise ValueError('Can not create new user without password')
-            user_record = auth.create_user(email=self.email, password=self._password)
+            user_record = auth.create_user(email=self.email,
+                                           password=self._password)
             self._key = user_record.uid
             db.reference('users').child(self.key).set(self.get_data())
         else:
@@ -100,9 +105,9 @@ class User:
     @staticmethod
     def load_from_db(key):
         user = db.reference('users').child(key).get()
-        return User(user.get('name'), user.get('lastName'), user.get('email'), user.get('type'),
-                    image=user.get('image'), phone=user.get('phone'), info=user.get('info'),
-                    key=key)
+        return User(user.get('name'), user.get('lastName'), user.get('email'),
+                    user.get('type'), image=user.get('image'),
+                    phone=user.get('phone'), info=user.get('info'), key=key)
 
     def _delete_data(self):
         self._key = None
@@ -116,8 +121,8 @@ class User:
         self._password = None
 
     def _validate(self):
-        if (self.name is None or self.last_name is None or self.email is None or
-                self.user_role is None):
+        if (self.name is None or self.last_name is None or
+                self.email is None or self.user_role is None):
             raise ValueError("Insufficient Data")
 
 
@@ -159,14 +164,16 @@ class Users:
             if complete_profile:
                 if user.get('completeProfile'):
                     users.append(
-                        User(user.get('name'), user.get('lastName'), user.get('email'),
-                             user.get('type'), image=user.get('image'), phone=user.get('phone'),
+                        User(user.get('name'), user.get('lastName'),
+                             user.get('email'), user.get('type'),
+                             image=user.get('image'), phone=user.get('phone'),
                              info=user.get('info'), key=key)
                     )
             else:
                 users.append(
-                    User(user.get('name'), user.get('lastName'), user.get('email'),
-                         user.get('type'), image=user.get('image'), phone=user.get('phone'),
+                    User(user.get('name'), user.get('lastName'),
+                         user.get('email'), user.get('type'),
+                         image=user.get('image'), phone=user.get('phone'),
                          info=user.get('info'), key=key)
                 )
         self._users = users
@@ -183,7 +190,10 @@ class Users:
             user_role = sheet.cell(row, 6).value
             phone = sheet.cell(row, 7).value
             info = sheet.cell(row, 8).value
-            users.append(User(name, last_name, email, user_role, phone=phone, info=info, key=key))
+            users.append(
+                User(name, last_name, email, user_role, phone=phone, info=info,
+                     key=key)
+            )
         self._users = users
 
     def export_to_file(self, file, title="Users"):
@@ -218,7 +228,8 @@ class Users:
                 return user
         return None
 
-    def get_user_by_name_and_role(self, user_name='', user_role='basic_users', find_one=True):
+    def get_user_by_name_and_role(self, user_name='', user_role='basic_users',
+                                  find_one=True):
         users = []
         for user in self.users:
             is_in_name = check_in_string(user_name, user.display_name)

@@ -15,7 +15,11 @@ class Office:
         return self._key
 
     def get_data(self):
-        return {'name': self.name, 'address': self.address, 'url': self.google_map_url}
+        return {
+            'name': self.name,
+            'address': self.address,
+            'url': self.google_map_url
+        }
 
     def upload(self):
         self._validate()
@@ -32,7 +36,8 @@ class Office:
     @staticmethod
     def load_from_db(key):
         office = db.reference('offices').child(key).get()
-        return Office(office.get('name'), office.get('address'), office.get('url'), key=key)
+        return Office(office.get('name'), office.get('address'),
+                      office.get('url'), key=key)
 
     def _delete_data(self):
         self._key = None
@@ -92,7 +97,8 @@ class Offices:
             raise ImportError('No offices in database')
         for key, office in offices_db.items():
             offices.append(
-                Office(office.get('name'), office.get('address'), office.get('url'), key=key)
+                Office(office.get('name'), office.get('address'),
+                       office.get('url'), key=key)
             )
         self._offices = offices
 
@@ -112,19 +118,19 @@ class Offices:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = title
-        cell_index = sheet.cell(1, 1, "N")
-        cell_key = sheet.cell(1, 2, "KEY")
-        cell_name = sheet.cell(1, 3, "NAME")
-        cell_address = sheet.cell(1, 4, "ADDRESS")
-        cell_url = sheet.cell(1, 5, "URL")
+        sheet.cell(1, 1, "N")
+        sheet.cell(1, 2, "KEY")
+        sheet.cell(1, 3, "NAME")
+        sheet.cell(1, 4, "ADDRESS")
+        sheet.cell(1, 5, "URL")
         workbook.save(file)
         index = 2
         for office in self.offices:
-            cell_index = sheet.cell(index, 1, index - 1)
-            cell_key = sheet.cell(index, 2, office.key)
-            cell_name = sheet.cell(index, 3, office.name)
-            cell_address = sheet.cell(index, 4, office.address)
-            cell_url = sheet.cell(index, 5, office.google_map_url)
+            sheet.cell(index, 1, index - 1)
+            sheet.cell(index, 2, office.key)
+            sheet.cell(index, 3, office.name)
+            sheet.cell(index, 4, office.address)
+            sheet.cell(index, 5, office.google_map_url)
             index += 1
             workbook.save(file)
 
