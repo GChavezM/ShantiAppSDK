@@ -67,7 +67,8 @@ def fetch_cloud_functions(url, data, fetch_type='post'):
     """
     if TOKEN == '':
         raise ValueError('Import Token to module')
-    response = requests.post(url=url, json=data, headers={'Authorization': 'Bearer ' + TOKEN})
+    response = requests.post(url=url, json=data,
+                             headers={'Authorization': 'Bearer ' + TOKEN})
     if not response.ok:
         handle_request_error(response.text)
     print('Success')
@@ -120,7 +121,10 @@ def upload_image(image, location, past_location=None):
     if not image:
         return None
     url = 'https://us-central1-shantiapp-4eae1.cloudfunctions.net/uploadImage'
-    image_data = {'base64': _get_image_base64(image), 'imagePath': past_location}
+    image_data = {
+        'base64': _get_image_base64(image),
+        'imagePath': past_location
+    }
     data = {
         'image': image_data,
         'location': location
