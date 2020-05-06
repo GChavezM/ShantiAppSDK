@@ -43,15 +43,15 @@ class User:
         self.last_name = last_name
         self.email = email
         self.user_role = user_role
+        self.image = None
         image = kwargs.get('image')
         if image and 'uri' in image:
             self.image = kwargs.get('image')
-        else:
-            self.image = None
         self.phone = kwargs.get('phone')
         self.info = kwargs.get('info')
         self._key = key
         self._password = kwargs.get('password')
+        self.subscription_type = None
 
     @property
     def key(self):
@@ -63,11 +63,20 @@ class User:
 
     @property
     def is_complete_profile(self):
-        return self.name is not None and self.last_name is not None and self.email is not None and self.phone is not None
+        return self.name is not None and self.last_name is not None and \
+               self.email is not None and self.phone is not None
 
     def get_data(self):
-        return {'name': self.name, 'lastName': self.last_name, 'email': self.email, 'type': self.user_role,
-                'phone': self.phone, 'info': self.info, 'image': self.image, 'completeProfile': self.is_complete_profile}
+        return {
+            'name': self.name,
+            'lastName': self.last_name,
+            'email': self.email,
+            'role': self.user_role,
+            'phone': self.phone,
+            'info': self.info,
+            'image': self.image,
+            'completeProfile': self.is_complete_profile
+        }
 
     def upload(self, image):
         self._validate()
@@ -92,7 +101,8 @@ class User:
     def load_from_db(key):
         user = db.reference('users').child(key).get()
         return User(user.get('name'), user.get('lastName'), user.get('email'), user.get('type'),
-                    image=user.get('image'), phone=user.get('phone'), info=user.get('info'), key=key)
+                    image=user.get('image'), phone=user.get('phone'), info=user.get('info'),
+                    key=key)
 
     def _delete_data(self):
         self._key = None
@@ -106,7 +116,8 @@ class User:
         self._password = None
 
     def _validate(self):
-        if self.name is None or self.last_name is None or self.email is None or self.user_role is None:
+        if (self.name is None or self.last_name is None or self.email is None or
+                self.user_role is None):
             raise ValueError("Insufficient Data")
 
 
@@ -148,13 +159,15 @@ class Users:
             if complete_profile:
                 if user.get('completeProfile'):
                     users.append(
-                        User(user.get('name'), user.get('lastName'), user.get('email'), user.get('type'),
-                             image=user.get('image'), phone=user.get('phone'), info=user.get('info'), key=key)
+                        User(user.get('name'), user.get('lastName'), user.get('email'),
+                             user.get('type'), image=user.get('image'), phone=user.get('phone'),
+                             info=user.get('info'), key=key)
                     )
             else:
                 users.append(
-                    User(user.get('name'), user.get('lastName'), user.get('email'), user.get('type'),
-                         image=user.get('image'), phone=user.get('phone'), info=user.get('info'), key=key)
+                    User(user.get('name'), user.get('lastName'), user.get('email'),
+                         user.get('type'), image=user.get('image'), phone=user.get('phone'),
+                         info=user.get('info'), key=key)
                 )
         self._users = users
 
@@ -177,25 +190,25 @@ class Users:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = title
-        cell_index = sheet.cell(1, 1, "N")
-        cell_key = sheet.cell(1, 2, "KEY")
-        cell_name = sheet.cell(1, 3, "NAME")
-        cell_last_name = sheet.cell(1, 4, "LAST_NAME")
-        cell_url = sheet.cell(1, 5, "EMAIL")
-        cell_role = sheet.cell(1, 6, "ROLE")
-        cell_phone = sheet.cell(1, 7, "PHONE")
-        cell_info = sheet.cell(1, 8, "INFO")
+        sheet.cell(1, 1, "N")
+        sheet.cell(1, 2, "KEY")
+        sheet.cell(1, 3, "NAME")
+        sheet.cell(1, 4, "LAST_NAME")
+        sheet.cell(1, 5, "EMAIL")
+        sheet.cell(1, 6, "ROLE")
+        sheet.cell(1, 7, "PHONE")
+        sheet.cell(1, 8, "INFO")
         workbook.save(file)
         index = 2
         for user in self.users:
-            cell_index = sheet.cell(index, 1, index - 1)
-            cell_key = sheet.cell(index, 2, user.key)
-            cell_name = sheet.cell(index, 3, user.name)
-            cell_last_name = sheet.cell(index, 4, user.last_name)
-            cell_url = sheet.cell(index, 5, user.email)
-            cell_role = sheet.cell(index, 6, user.user_role)
-            cell_phone = sheet.cell(index, 7, user.phone)
-            cell_info = sheet.cell(index, 8, user.info)
+            sheet.cell(index, 1, index - 1)
+            sheet.cell(index, 2, user.key)
+            sheet.cell(index, 3, user.name)
+            sheet.cell(index, 4, user.last_name)
+            sheet.cell(index, 5, user.email)
+            sheet.cell(index, 6, user.user_role)
+            sheet.cell(index, 7, user.phone)
+            sheet.cell(index, 8, user.info)
             index += 1
             workbook.save(file)
 
