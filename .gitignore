@@ -131,7 +131,6 @@ dmypy.json
 
 # Congif
 shantiapp.json
-config.py
 
 # Images
 *.jpg
