@@ -30,24 +30,27 @@ def check_in_string(strings, original_string):
     return True
 
 
-def convert_date(year, month, day, hour, minute):
+def convert_date(hour, minute, year=0, month=0, day=0, simple_mode=False):
     """
     Function for converting python date into JavaScript date.
 
     Args:
+        hour (int): Hour of date.
+        minute (int): Minute of date.
         year (int): Year of date.
         month (int): Month of date.
         day (int): Day of date.
-        hour (int): Hour of date.
-        minute (int): Minute of date.
+        simple_mode (bool): If True, simple mode is used without year, month and day variables.
 
     Return:
         Converted date.
     """
-    if year == 0 or month == 0 or day == 0:
+    if simple_mode:
         today = datetime.now()
         date = datetime(today.year, today.month - 1, today.day, hour, minute)
     else:
+        if year == 0 or month == 0 or day == 0:
+            raise ValueError("Incorrect values")
         date = datetime(year, month, day, hour, minute)
     date_js = int(time.mktime(date.timetuple())) * 1000
     offset = 2678400000
@@ -135,13 +138,13 @@ def upload_image(image, location, past_location=None):
 
 def strip_accents(text):
     """
-    Remove string accents
+    Remove string accents.
 
     Args:
-        text: String to format
+        text: String to format.
 
     Returns:
-        str: String formatted
+        str: String formatted.
     """
     text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8')
     return str(text)
@@ -149,14 +152,14 @@ def strip_accents(text):
 
 def make_email_address(name, last_name):
     """
-    Create an email address string from a name and last name
+    Create an email address string with a name and last name.
 
     Args:
-        name: Name
-        last_name: Last name
+        name: Name.
+        last_name: Last name.
 
     Returns:
-        str: Email address string
+        str: Email address string.
     """
     name = name.replace(" ", "").lower()
     last_name = last_name.replace(" ", "").lower()
