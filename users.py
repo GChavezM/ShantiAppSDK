@@ -2,7 +2,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 from firebase_admin import auth
 from firebase_admin import db
-from _util import check_in_string, upload_image
+from util import check_in_string, upload_image
 
 _ALL_USERS = {
     'basic': True,
@@ -80,7 +80,7 @@ class User:
             'completeProfile': self.is_complete_profile
         }
 
-    def upload(self, image):
+    def upload(self, image=None):
         self._validate()
         if image:
             past_location = (

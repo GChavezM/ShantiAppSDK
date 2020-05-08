@@ -1,6 +1,6 @@
 """Admin utilities"""
 import requests
-from _util import handle_request_error
+from util import handle_request_error
 
 
 class Admin:

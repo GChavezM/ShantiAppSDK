@@ -4,6 +4,7 @@ import time
 import json
 import base64
 import requests
+import unicodedata
 
 TOKEN = ''
 
@@ -130,3 +131,35 @@ def upload_image(image, location, past_location=None):
         'location': location
     }
     return fetch_cloud_functions(url, data, fetch_type='get')
+
+
+def strip_accents(text):
+    """
+    Remove string accents
+
+    Args:
+        text: String to format
+
+    Returns:
+        str: String formatted
+    """
+    text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('utf-8')
+    return str(text)
+
+
+def make_email_address(name, last_name):
+    """
+    Create an email address string from a name and last name
+
+    Args:
+        name: Name
+        last_name: Last name
+
+    Returns:
+        str: Email address string
+    """
+    name = name.replace(" ", "").lower()
+    last_name = last_name.replace(" ", "").lower()
+    name = strip_accents(name)
+    last_name = strip_accents(last_name)
+    return name + '.' + last_name + '@shanti.com'

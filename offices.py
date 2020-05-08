@@ -1,7 +1,7 @@
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 from firebase_admin import db
-from _util import check_in_string
+from util import check_in_string
 
 
 class Office:
