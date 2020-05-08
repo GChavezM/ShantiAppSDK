@@ -1,6 +1,6 @@
 from config import initialize_app, remove_app
 from admin import Admin
-import _util
+import util
 from requests.exceptions import ConnectionError
 import time
 
@@ -85,21 +85,23 @@ def test_offices_database():
 def test_office_file(file_name):
     from offices import Offices
     offices = Offices()
-    # offices.load_from_db()
-    # offices.export_to_file(file_name, "Sucursales")
-    offices.load_from_file(file_name)
+    offices.load_from_db()
+    offices.export_to_file(file_name, "Sucursales")
+    # offices.load_from_file(file_name)
     for office in offices:
+        print("Key:", office.key)
         print("Nombre:", office.name)
         print("Dirección:", office.address)
         print("Url:", office.google_map_url)
-        print("Key:", office.key)
 
 
 def test_users_database():
-    from users import User, Users
+    from users import Users
     users = Users()
     users.load_from_db(complete_profile=False)
-    admin_users = users.get_user_by_name_and_role(user_name='', user_role='admin_users', find_one=False)
+    admin_users = users.get_user_by_name_and_role(user_name='',
+                                                  user_role='admin_users',
+                                                  find_one=False)
     print("Original Users List")
     for user in admin_users:
         print("Key:", user.key)
@@ -123,11 +125,11 @@ if __name__ == "__main__":
         app, api_key = start()
         time.sleep(1)
         # admin = Admin(api_key)
-        # _util.TOKEN = admin.token
+        # util.TOKEN = admin.token
         # test_offices()
         # test_offices_database()
         # test_office_file("Sucursales.xlsx")
-        test_users_database()
+        # test_users_database()
 
         # office = {'name': 'Test', 'address': 'Centro', 'url': None}
         # key = "{'name': 'Test', 'address': 'Centro', 'url': None}"
