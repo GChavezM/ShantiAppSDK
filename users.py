@@ -161,27 +161,18 @@ class Users:
         else:
             raise ValueError("Insufficient Data")
 
-    def load_from_db(self, complete_profile=False):
+    def load_from_db(self):
         users = []
         users_db = db.reference('users').get()
         if not users_db:
             raise ImportError('No users in database')
         for key, user in users_db.items():
-            if complete_profile:
-                if user.get('completeProfile'):
-                    users.append(
-                        User(user.get('name'), user.get('lastName'),
-                             user.get('email'), user.get('role'),
-                             image=user.get('image'), phone=user.get('phone'),
-                             info=user.get('info'), key=key)
-                    )
-            else:
-                users.append(
-                    User(user.get('name'), user.get('lastName'),
-                         user.get('email'), user.get('role'),
-                         image=user.get('image'), phone=user.get('phone'),
-                         info=user.get('info'), key=key)
-                )
+            users.append(
+                User(user.get('name'), user.get('lastName'),
+                     user.get('email'), user.get('role'),
+                     image=user.get('image'), phone=user.get('phone'),
+                     info=user.get('info'), key=key)
+            )
         self._users = users
         print('Success')
 
