@@ -51,7 +51,6 @@ class User:
         self.info = kwargs.get('info')
         self._key = key
         self._password = kwargs.get('password')
-        self.subscription_type = None
 
     @property
     def key(self):
@@ -65,6 +64,12 @@ class User:
     def is_complete_profile(self):
         return (self.name is not None and self.last_name is not None and
                 self.email is not None and self.phone is not None)
+
+    @property
+    def subscription_type(self):
+        if self.key:
+            return db.reference('users').child(self.key).child('subscriptionType').get()
+        return None
 
     def get_data(self):
         return {
@@ -154,28 +159,20 @@ class Users:
         else:
             raise ValueError("Insufficient Data")
 
-    def load_from_db(self, complete_profile=True):
+    def load_from_db(self):
         users = []
         users_db = db.reference('users').get()
         if not users_db:
             raise ImportError('No users in database')
         for key, user in users_db.items():
-            if complete_profile:
-                if user.get('completeProfile'):
-                    users.append(
-                        User(user.get('name'), user.get('lastName'),
-                             user.get('email'), user.get('type'),
-                             image=user.get('image'), phone=user.get('phone'),
-                             info=user.get('info'), key=key)
-                    )
-            else:
-                users.append(
-                    User(user.get('name'), user.get('lastName'),
-                         user.get('email'), user.get('type'),
-                         image=user.get('image'), phone=user.get('phone'),
-                         info=user.get('info'), key=key)
-                )
+            users.append(
+                User(user.get('name'), user.get('lastName'),
+                     user.get('email'), user.get('role'),
+                     image=user.get('image'), phone=user.get('phone'),
+                     info=user.get('info'), key=key)
+            )
         self._users = users
+        print('Success')
 
     def load_from_file(self, file):
         users = []
@@ -233,12 +230,30 @@ class Users:
         users = []
         for user in self.users:
             is_in_name = check_in_string(user_name, user.display_name)
-            is_in_type = _USER_ROLES[user_role][user.user_role]
+            is_in_type = _USER_ROLES[user_role][user.role]
             if is_in_name and is_in_type:
                 users.append(user)
         if find_one:
             if len(users) > 1:
-                return ValueError('To many coincidences')
+                raise ValueError('To many coincidences')
+            if len(users) == 0:
+                raise ValueError('No coincidences')
+            return users[0]
+        return Users(users)
+
+    def get_user_by_email(self, user_email, find_one=True):
+        users = []
+        for user in self.users:
+            is_in_name = user_email == user.email
+            if user_email == 'daniela.yaffar@shanti.com':
+                print(user.email)
+            if is_in_name:
+                users.append(user)
+        if find_one:
+            if len(users) > 1:
+                raise ValueError('To many coincidences')
+            if len(users) == 0:
+                raise ValueError('No coincidences')
             return users[0]
         return Users(users)
 

@@ -47,14 +47,15 @@ def convert_date(hour, minute, year=0, month=0, day=0, simple_mode=False):
     """
     if simple_mode:
         today = datetime.now()
-        date = datetime(today.year, today.month - 1, today.day, hour, minute)
+        date = datetime(today.year, today.month, today.day, hour, minute)
     else:
         if year == 0 or month == 0 or day == 0:
             raise ValueError("Incorrect values")
         date = datetime(year, month, day, hour, minute)
     date_js = int(time.mktime(date.timetuple())) * 1000
-    offset = 2678400000
-    return date_js + offset
+    # offset = 2678400000
+    # return date_js + offset
+    return date_js
 
 
 def fetch_cloud_functions(url, data, fetch_type='post'):
