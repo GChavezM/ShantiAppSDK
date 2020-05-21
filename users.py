@@ -45,10 +45,8 @@ class User:
         self.last_name = last_name
         self.email = email
         self.role = role
-        self.image = None
         image = kwargs.get('image')
-        if image and 'uri' in image:
-            self.image = kwargs.get('image')
+        self.image = image if image and 'uri' in image else None
         self.phone = kwargs.get('phone')
         self.info = kwargs.get('info')
         self._key = key
